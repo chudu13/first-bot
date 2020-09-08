@@ -12,7 +12,6 @@ import ru.home.mydb_bot.model.UserProfileData;
 import ru.home.mydb_bot.repository.UserProfileMongoRepository;
 import ru.home.mydb_bot.service.KeyboardService;
 import ru.home.mydb_bot.service.ReplyMessagesService;
-import ru.home.mydb_bot.service.UsersProfileDataService;
 import ru.home.mydb_bot.utils.Emojis;
 
 import java.util.List;
@@ -24,14 +23,11 @@ public class GetProfileHandler implements InputMessageHandler {
     private KeyboardService keyboardService;
     private UserDataCache userDataCache;
     private UserProfileMongoRepository mongoRepository;
-    private UsersProfileDataService usersProfileDataService;
 
     public GetProfileHandler(ReplyMessagesService replyMessagesService, KeyboardService keyboardService,
-                             UserDataCache userDataCache, UserProfileMongoRepository mongoRepository,
-                             UsersProfileDataService usersProfileDataService) {
+                             UserDataCache userDataCache, UserProfileMongoRepository mongoRepository) {
         this.replyMessagesService = replyMessagesService;
         this.keyboardService = keyboardService;
-        this.usersProfileDataService = usersProfileDataService;
         this.userDataCache = userDataCache;
         this.mongoRepository = mongoRepository;
     }
@@ -167,8 +163,8 @@ public class GetProfileHandler implements InputMessageHandler {
                 profileData.setSurname(usersAnswer);
                 replyToUser =  new SendMessage(chatId,
                         String.format("%s%n --------------------------------------------------------------- %n%s",
-                                "Данные по запросу:",toGetListData(usersProfileDataService
-                                        .getUserProfileData(profileData.getName(),profileData.getSurname()))));
+                                "Данные по запросу:",toGetListData(mongoRepository
+                                        .findByNameAndSurname(profileData.getName(),profileData.getSurname()))));
                 break;
             default:
                 userDataCache.setUsersCurrentBotState(userId,BotState.SHOW_MAIN_MENU);
@@ -179,9 +175,15 @@ public class GetProfileHandler implements InputMessageHandler {
 
     private StringBuilder toGetListData(List<UserProfileData> profile){
         StringBuilder builder = new StringBuilder();
-        profile.forEach(element -> builder.append(element)
-                .append(String.format("---------------------------------------------------------------%n")));
 
+        try{
+            profile.forEach(element -> builder
+                    .append(element)
+                    .append(String.format("---------------------------------------------------------------%n")));
+        }catch (NullPointerException ex){
+            builder.append("Такого профиля в базе данных не существует");
+        }
+        
         if (builder.length()==0){
             builder.append("Такого профиля в базе данных не существует");
         }
