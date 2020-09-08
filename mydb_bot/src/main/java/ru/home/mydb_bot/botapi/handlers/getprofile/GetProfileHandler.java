@@ -12,6 +12,7 @@ import ru.home.mydb_bot.model.UserProfileData;
 import ru.home.mydb_bot.repository.UserProfileMongoRepository;
 import ru.home.mydb_bot.service.KeyboardService;
 import ru.home.mydb_bot.service.ReplyMessagesService;
+import ru.home.mydb_bot.service.UsersProfileDataService;
 import ru.home.mydb_bot.utils.Emojis;
 
 import java.util.List;
@@ -23,11 +24,14 @@ public class GetProfileHandler implements InputMessageHandler {
     private KeyboardService keyboardService;
     private UserDataCache userDataCache;
     private UserProfileMongoRepository mongoRepository;
+    private UsersProfileDataService usersProfileDataService;
 
     public GetProfileHandler(ReplyMessagesService replyMessagesService, KeyboardService keyboardService,
-                             UserDataCache userDataCache, UserProfileMongoRepository mongoRepository) {
+                             UserDataCache userDataCache, UserProfileMongoRepository mongoRepository,
+                             UsersProfileDataService usersProfileDataService) {
         this.replyMessagesService = replyMessagesService;
         this.keyboardService = keyboardService;
+        this.usersProfileDataService = usersProfileDataService;
         this.userDataCache = userDataCache;
         this.mongoRepository = mongoRepository;
     }
@@ -163,8 +167,8 @@ public class GetProfileHandler implements InputMessageHandler {
                 profileData.setSurname(usersAnswer);
                 replyToUser =  new SendMessage(chatId,
                         String.format("%s%n --------------------------------------------------------------- %n%s",
-                                "Данные по запросу:", toGetListData(mongoRepository
-                                        .findByNameAndSurname(profileData.getName(),profileData.getSurname()))));
+                                "Данные по запросу:",toGetListData(usersProfileDataService
+                                        .getUserProfileData(profileData.getName(),profileData.getSurname()))));
                 break;
             default:
                 userDataCache.setUsersCurrentBotState(userId,BotState.SHOW_MAIN_MENU);
