@@ -156,7 +156,7 @@ public class GetProfileHandler implements InputMessageHandler {
         switch(botState){
             case GET_BY_SURNAME:
                 profileData.setName(usersAnswer);
-                replyToUser = replyMessagesService.getReplyMessage(chatId, "reply.askSurname");
+                replyToUser = replyMessagesService.getReplyMessage(chatId, "reply.askSurname",Emojis.INPUT);
                 userDataCache.setUsersCurrentBotState(userId,BotState.GET_DATA_READY);
                 break;
             case GET_DATA_READY:
